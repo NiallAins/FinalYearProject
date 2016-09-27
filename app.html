@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+
+ <head>
+    <title> EyePan Doodle </title>
+    <link href='https://fonts.googleapis.com/css?family=Fugaz+One' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="css/appStyle.css">
+    <link rel="stylesheet" type="text/css" href="css/font-awesome.min.css">
+
+    <script src="js/jQuery.min.js"></script>
+ </head>
+
+ <body>
+    <div id="homeScreen">
+      <div class="modal" id="homeMenu">
+        <img id="homeTitleImg" src="images/title.png" />
+          <br />
+        <span onclick="Menu.selectHomeBtn('new')">New Doodle</span> <br />
+        <span onclick="Menu.selectHomeBtn('load')">Load Doodle</span> <br />
+        <span onclick="Menu.selectHomeBtn('about')">About</span>
+      </div>
+    </div>
+
+    <div id="appScreen">
+      <div id="calibrate">
+        <canvas id="canCali"></canvas>
+        <div class="caliX" style="top: 0;  left: 10%;">x</div>
+        <div class="caliX" style="top: 0;  left: 45%;">x</div>
+        <div class="caliX" style="top: 0;  left: 85%;">x</div>
+        <div class="caliX" style="top: 30%; left: 30%;">x</div>
+        <div class="caliX" style="top: 30%; left: 70%;">x</div>
+        <div class="caliX" style="top: 65%; left: 10%;">x</div>
+        <div class="caliX" style="top: 65%; left: 45%;">x</div>
+        <div class="caliX" style="top: 65%; left: 85%;">x</div>
+        <div id="caliMessage">To calibrate your camera, <br /> click and trace over the 8 <b> Xs </b></div>
+      </div>
+
+      <video id="xLabsPreview"></video>
+
+      <img id="appTitleImg" src="images/title.png" />
+
+      <div id="status">Hold <b> SPACE </b> to eye-pan</div>
+
+      <div id="menu" onmouseleave="Menu.close()">
+        <div class="menuBtn" id="menuFile" onclick="Menu.toggle()" onmouseenter="Menu.fill(0)">
+          <i class="fa fa-file-o fa-2x"></i>
+        </div>
+        <div class="menuBtn" id="toolboxMin" onclick="Toolbox.toggle()">
+          <i class="fa fa-paint-brush fa-2x"></i>
+        </div>
+        <div class="menuBtn" id="menuGaze" onclick="Menu.toggle()" onmouseenter="Menu.fill(1)">
+          <i class="fa fa-eye fa-2x"></i>
+        </div>
+        <div class="menuBtn" id="menuAbout" onclick="Menu.toggle()" onmouseenter="Menu.fill(2)">
+          <i class="fa fa-question fa-2x"></i>
+        </div>
+        <div id="menuDropDown">
+          <span class="btn" onclick="Menu.select(0)"></span> <hr />
+          <span class="btn" onclick="Menu.select(1)"></span> <hr />
+          <span class="btn" onclick="Menu.select(2)"></span>
+        </div>
+      </div>
+
+      <div id="toolbox">
+        <table id="palette">
+          <tr id="titlebar">
+            <td colspan="2">
+              <div id="dragbar"></div>
+              <b class="btn" onclick="Toolbox.toggle()">x</b>
+            </td>
+          </tr>
+          <tr class="colourCells">
+            <td onclick="Brush.colour = '#000000'" style="background-color : #000"></td>
+            <td onclick="Brush.colour = '#FFFFFF'" style="background-color : #FFF"></td>
+          </tr>
+          <tr class="colourCells">
+            <td onclick="Brush.colour = '#FF6600'" style="background-color : #F60"></td>
+            <td onclick="Brush.colour = '#FFFF00'" style="background-color : #FF0"></td>
+          </tr>
+          <tr class="colourCells">
+            <td onclick="Brush.colour = '#FF0000'" style="background-color : #F00"></td>
+            <td onclick="Brush.colour = '#FF0066'" style="background-color : #F06"></td>
+          </tr>
+          <tr class="colourCells">
+            <td onclick="Brush.colour = '#660033'" style="background-color : #603"></td>
+            <td onclick="Brush.colour = '#3366FF'" style="background-color : #36F"></td>
+          </tr>
+          <tr class="colourCells">
+            <td onclick="Brush.colour = '#00CC00'" style="background-color : #0C0"></td>
+            <td onclick="Brush.colour = '#993300'" style="background-color : #930"></td>
+          </tr>
+          <tr class="tools">
+            <td colspan="2" class="tools">
+              <i>More:</i> <br />
+              <input type="color" onchange="Brush.colour = this.value" id="colourInput" value="#3366FF">
+            <td>
+          </tr>
+          <tr class="tools">
+            <td colspan="2">
+              <i>Brush:</i> <br />
+              <input type="range" onchange="Brush.size = this.value" id="brushSize" min="1" max="50" value="8">
+            </td>
+          </tr>
+          <tr class="tools">
+            <td onclick="Canvas.zoom(1.25); View.baseZ *= 1 / 1.25;"><i class="fa fa-search-plus fa-2x btn"></i></td>
+            <td onclick="Canvas.zoom(0.8); View.baseZ *= 1 / 0.8;"><i class="fa fa-search-minus fa-2x btn "></i></td>
+          </tr>
+          <tr class="tools">
+            <td onclick="Canvas.undo()"><i class="fa fa-undo fa-2x btn"></i></td>
+            <td onclick="Canvas.redo()"><i class="fa fa-repeat fa-2x btn "></i></td>
+          </tr>
+        </table>
+      </div>
+
+      <!--<div class="scroller" id="scrollLeft" ></div>
+      <div class="scroller" id="scrollRight"></div>
+      <div class="scroller" id="scrollDown" ></div>
+      <div class="scroller" id="scrollUp"   ></div>-->
+
+      <canvas id="canvas_paint"></canvas>
+      <canvas id="canvas_tools"></canvas>
+      <canvas id="canvas_debug"></canvas>
+
+      <div class="debug-hotspot" id="hotspotLeft"></div>
+      <div class="debug-hotspot" id="hotspotRight"></div>
+      <div class="debug-hotspot" id="hotspotTop"></div>
+      <div class="debug-hotspot" id="hotspotBottom"></div>
+    </div>
+
+    <div id="modal-back"></div>
+
+    <div class="modal about" id="helpModal">
+      <span class="exitModalBtn" onclick="Menu.closeModal()">x</span>
+      <h2> How to Use EyePan </h2>
+      <h3>How to Doodle</h3>
+      <p>
+        Click and drag on the canvas to draw. <br />
+        Select a colour in the toolbox, or click "More" to access more colours. <br />
+        Use the "Brush" slider in the toolbox to change the size of you brush.  <br />
+        Click <i class="fa fa-undo fa-lg"></i> and <i class="fa fa-repeat fa-lg"></i> to undo or redo changes. <br />
+        <br />
+        Click the <i class="fa fa-file-o fa-lg"></i> menu in the top left to save your doodle, or to open an image to draw on.
+      </p>
+      <h3>Navigate with your Mouse</h3>
+      <p>
+        Pan by moving your cursor to the edge of the canvas and clicking. <br />
+        Zoom using the <i class="fa fa-search-plus fa-lg"></i> and <i class="fa fa-search-minus fa-lg"></i> buttons in the toolbox. 
+      </p>
+      <h3>Navigate with your Eyes</h3>
+      <p>
+        Click the <i class="fa fa-eye fa-lg"></i> menu to turn on eye tracking. Look at the edge of the canvas while holding space to pan and zoom. <br />
+        If "Auto Pan" is turned on in the <i class="fa fa-eye fa-lg"></i> menu, space is not needed to pan and instead is held to temporarily disable eye tracking. <br />
+        If navigation with eye tracking is not working correctly, the system can be re-calibratated in the <i class="fa fa-eye fa-lg"></i> menu.
+      </p>
+      <h3>Shortcuts</h3>
+      <p>
+        EyePan utilizes keyboard shortcuts. A list of these shortcuts can be viewed in the <i class="fa fa-question fa-lg"></i> menu.
+      </p>
+    </div>
+
+    <div class="modal about" id="aboutModal">
+      <span class="exitModalBtn" onclick="Menu.closeModal()">x</span>
+      <h2> About EyePan</h2>
+      <p>
+        EyePan is an small online doodling application which uses HTML5 and your web camera to allow interaction using your eye movements!<br />
+        EyePan was created as an experiment into the possibility of using gaze tracking as a user interface tool and to test the potential of the "wearable-hardware free" gaze tracking software publicly available right now.
+        <br/><br />
+        EyePan uses gaze tracking sofware created by xLabs which is available free as a Google Chrome extension.
+        <br />
+        <a href="https://xlabsgaze.com/">Learn more about xLabs gaze tracking technoloy here.</a>
+        <br /><br />
+        This entire project was created by Niall Ainsworth as part of a Final Year project within the National University of Ireland Maynooth.
+        If you want to find out more about this project and its development, you can contact Niall by email at:<br />
+        <a href="mailto:niallainsworth@gmail.com"> NiallAinsworth@gmail.com </a>
+        <br /><br />
+        <h3>Thanks for your Support!</h3>
+    </div>
+
+    <div class="modal about" id="hotkeysModal">
+      <span class="exitModalBtn" onclick="Menu.closeModal()">x</span>
+      <h2> Keyboard Shortcuts </h2>
+      <div id="hk-function">
+        <br />
+        New Doodle<br/>Save Doodle<br/>Load Image<br/><br/>
+        Toggle Toolbox<br/>Pan<br/>Zoom Out<br/>Zoom In<br/>Select Colour from Palette<br/>
+        Increase Brush Size<br/>Decrease Brush Size<br/>Undo<br/>Redo<br/><br />
+        Toggle Eye Tracking<br/>Toggle Auto Pan<br/>Re-calibrate Eye Tracking<br/><br />
+        Open Hotkeys Modal<br/>Close Model<br />
+      </div>
+      <div id="hk-key">
+        <br />
+        N<br/>S<br/>L<br /><br/>
+        B<br/>ARROW KEYS<br/>W<br/>Q<br/>0 - 9<br/>
+        [<br/>]<br/>Z<br/>\<br/><br/>
+        E<br />T<br />R<br /><br />
+        H <br /> X
+      </div>
+    </div>
+
+    <div class="modal about" id="uploadModal">
+      <span class="exitModalBtn" onclick="Menu.closeModal()">x</span>
+      <h2> Load Image </h2>
+      <p>Upload an image to doodle on. <br /> Uploading a file will overwrite your current doodle.</p>
+      <input type="file" id="files" name="files" value="Choose Image" />
+      <br /><br />
+      <input type="submit" class="button" id="startUploadBtn" value="Start Doodle!" />
+      <br />
+    </div>
+  
+
+    <script src="js/trackingAPI.js"></script>
+    <script src="js/appScript.js"></script>
+ </body>
+
+</html>

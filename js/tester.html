@@ -1,0 +1,74 @@
+<html>
+
+<head>
+	<style>
+		body {
+			background-color : #333;
+			text-align: center;
+		}
+		canvas {
+			background-color : #FFF;
+		}
+	</style>
+</head>
+<body>
+	<canvas id="can" width="1024" height ="588"></canvas>
+
+	<script>
+
+		var can = document.getElementById('can');
+		var ctx = can.getContext('2d');
+		var log = [];
+		var drawing = false;
+
+		var Canvas = {
+			drawCan : function() {
+				if (log.length > 0) {
+					ctx.beginPath();
+					ctx.moveTo(log[0].x, log[0].y);
+					for(var i = 1; i < log.length - 1; i += 1) {
+						if (log[i] === null) {
+							ctx.stroke();
+							ctx.beginPath();
+							ctx.moveTo(log[i + 1].x, log[i + 1].y);
+							i += 1;
+						} else {
+			        		ctx.lineTo(log[i].x, log[i].y);
+						}
+					}
+					ctx.stroke();
+				}
+			},
+
+			clear : function() {
+				ctx.clearRect(0, 0, can.width, can.height);
+			}
+		}
+	  can.onmousedown = function(e) {
+	  	drawing = true;
+	    var rect = can.getBoundingClientRect();
+	    log.push({x : e.clientX - rect.left, y : e.clientY - rect.top});
+	    log.push({x : e.clientX - rect.left, y : e.clientY - rect.top + 1});
+	  }
+	  can.onmouseup = function(e) {
+	  	log.push(null);
+	  	drawing  = false;
+	  }
+	  can.onmousemove = function(e) {
+	  	if (drawing) {
+		    var rect = can.getBoundingClientRect();
+		    log.push({x : e.clientX - rect.left, y : e.clientY - rect.top});
+		}
+	  }
+
+	  var mainLoop = function() {
+	  	Canvas.clear();
+	  	Canvas.drawCan();
+	  	window.requestAnimationFrame(mainLoop);
+	  }
+	  mainLoop();
+
+	</script>
+</body>
+
+</html>
